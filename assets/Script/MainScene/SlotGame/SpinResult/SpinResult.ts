@@ -12,6 +12,8 @@ export default class SpinResult extends cc.Component {
    @property(cc.Prefab) itemPref: cc.Prefab = null;
    @property(cc.Prefab) cellPref: cc.Prefab = null;
 
+   @property([cc.SpriteFrame]) tileSprFrames: cc.SpriteFrame[] = [];
+
    private _gridCells: Array<Array<SpinResultCell>> = [];
 
    buildCellGrid(row: number, column: number) {

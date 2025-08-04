@@ -223,6 +223,38 @@
     "cellPref": {
       "__uuid__": "8cac22a8-826d-4a2b-b52c-2c2a33e92606"
     },
+    "tileSprFrames": [
+      {
+        "__uuid__": "15fd3b6c-d466-4ce9-be3d-6c8c50e83093"
+      },
+      {
+        "__uuid__": "d6a642df-1098-4bf3-8a4a-e8fa62b9a3db"
+      },
+      {
+        "__uuid__": "ab6e2398-6ce6-4bfc-b477-720bd2af95ce"
+      },
+      {
+        "__uuid__": "c1ab6668-e9f5-4e4c-b634-ffb9b1401b51"
+      },
+      {
+        "__uuid__": "5292d5e5-c3e8-47bb-b4d6-31d73e8b9ce9"
+      },
+      {
+        "__uuid__": "609ae27f-b658-4feb-9328-b405bb3ab0d8"
+      },
+      {
+        "__uuid__": "31532316-b170-454c-8c50-df9182c82cb0"
+      },
+      {
+        "__uuid__": "6ea7e9af-896a-4aaa-acbd-da4286d8b37c"
+      },
+      {
+        "__uuid__": "663f9df1-d57f-42d0-a33f-e8ae2c098b77"
+      },
+      {
+        "__uuid__": "60db4284-8371-445c-b649-f6917dfcf6f4"
+      }
+    ],
     "_id": "86lLIfbzlAI7jmuOoxHeJ7"
   },
   {
