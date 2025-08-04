@@ -13,8 +13,8 @@ export const GAME_CONFIG = {
 }
 
 export const POSSIBLE_SPIN_RESULT_TILES = [
-   { tileID: Utils.getRandomId(16), sprFrameIndex: 0, pointMultiply: 1, spawnChance: 22 },
-   { tileID: Utils.getRandomId(16), sprFrameIndex: 1, pointMultiply: 2, spawnChance: 20 },
+   { tileID: Utils.getRandomId(16), sprFrameIndex: 0, pointMultiply: 1.5, spawnChance: 22 },
+   { tileID: Utils.getRandomId(16), sprFrameIndex: 1, pointMultiply: 3, spawnChance: 20 },
    { tileID: Utils.getRandomId(16), sprFrameIndex: 2, pointMultiply: 5, spawnChance: 15 },
    { tileID: Utils.getRandomId(16), sprFrameIndex: 3, pointMultiply: 10, spawnChance: 10 },
    { tileID: Utils.getRandomId(16), sprFrameIndex: 4, pointMultiply: 20, spawnChance: 8 },

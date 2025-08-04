@@ -1,12 +1,13 @@
 import { GAME_CONFIG } from "../../../Config/GameConfig";
-import SpinResultCell from "./SpinResultCell";
+import SlotGridCell from "./SlotGridCell";
+import SlotGridItem from "./SlotGridItem";
 
 const { ccclass, property } = cc._decorator;
 
 const GRID_CELL_PADDING = 30;
 
 @ccclass
-export default class SpinResult extends cc.Component {
+export default class SlotGridView extends cc.Component {
    @property(cc.Node) cellGrid: cc.Node = null;
 
    @property(cc.Prefab) itemPref: cc.Prefab = null;
@@ -14,9 +15,10 @@ export default class SpinResult extends cc.Component {
 
    @property([cc.SpriteFrame]) tileSprFrames: cc.SpriteFrame[] = [];
 
-   private _gridCells: Array<Array<SpinResultCell>> = [];
+   private _gridCells: Array<Array<SlotGridCell>> = [];
+   private _currentGridItems: Array<Array<SlotGridItem>> = [];
 
-   buildCellGrid(row: number, column: number) {
+   public buildCellGrid(row: number, column: number) {
       if (row <= 0 || row > GAME_CONFIG.slotGame.gridRowCap) {
          console.error(`[SpinResult:buildCellGrid] Unexpected behavior: row is invalid`);
          return;
@@ -35,7 +37,7 @@ export default class SpinResult extends cc.Component {
       const startX = -(this.cellGrid.width / 2), startY = this.cellGrid.height / 2;
       let tempX = startX, tempY = startY;
 
-      let gridCells: Array<Array<SpinResultCell>> = [];
+      let gridCells: Array<Array<SlotGridCell>> = [];
 
       for (let r = 0; r < row; r++) {
          gridCells.push([]);
@@ -49,7 +51,7 @@ export default class SpinResult extends cc.Component {
             cell.setPosition(pos);
             cell.setContentSize(cellSize);
 
-            const cellScript = cell.getComponent(SpinResultCell);
+            const cellScript = cell.getComponent(SlotGridCell);
             gridCells[r].push(cellScript);
 
             tempX += GRID_CELL_PADDING + cellSize.width;
@@ -69,4 +71,44 @@ export default class SpinResult extends cc.Component {
       });
    }
 
+   public displayGrid(grid) {
+      if (CC_DEV) console.log(`[SlotGridView:displayGrid]`, grid);
+
+      for (let r = 0; r < this._currentGridItems.length; r++) {
+         for (let c = 0; c < this._currentGridItems[r].length; c++) {
+            const item = this._currentGridItems[r][c];
+            if (cc.isValid(item?.node)) item.node.destroy();
+         }
+      }
+
+      this._currentGridItems = [];
+
+      for (let r = 0; r < grid.length; r++) {
+         this._currentGridItems.push([]);
+
+         for (let c = 0; c < grid[r].length; c++) {
+            const tileData = grid[r][c];
+            const cell = this._gridCells[r][c];
+
+            const itemNode = cc.instantiate(this.itemPref);
+            itemNode.setParent(this.cellGrid);
+            itemNode.setPosition(cell.node.position);
+            itemNode.setContentSize(cell.node.getContentSize());
+
+            const itemScript = itemNode.getComponent(SlotGridItem);
+
+            const sprFrame = this.tileSprFrames[tileData.sprFrameIndex];
+            if (!sprFrame) console.error(`[SlotGridView:displayGrid] Unexpected behavior: sprFrame is null`);
+
+            itemScript.spr.spriteFrame = sprFrame;
+
+            this._currentGridItems[r].push(itemScript);
+         }
+      }
+   }
+
+   public playSpinAnimation(spinResult) {
+      if (CC_DEV) console.log(`[SlotGridView:playSpinAnimation]`, spinResult);
+
+   }
 }

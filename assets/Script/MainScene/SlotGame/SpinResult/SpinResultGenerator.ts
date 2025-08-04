@@ -27,6 +27,20 @@ export default class SpinResultGenerator {
       return winningLines;
    }
 
+   public static generateRandomResultGrid(row, column): Array<Array<any>> {
+      let resultGrid = [];
+
+      for (let r = 0; r < row; r++) {
+         resultGrid.push([]);
+         for (let c = 0; c < column; c++) {
+            const tileResult = this.getRandomSpinTile();
+            resultGrid[r].push(tileResult);
+         }
+      }
+
+      return resultGrid;
+   }
+
    public static generateRandomSpinResult(betAmount: number = 0) {
       if (betAmount < 0) {
          throw new Error(`[SpinResultGenerator:generateRandomSpinResult] Unexpected behavior: betAmount is a negative number`);
@@ -37,16 +51,7 @@ export default class SpinResultGenerator {
          column: GAME_CONFIG.slotGame.gridColumn,
       }
 
-      let resultGrid = [];
-
-      for (let r = 0; r < gridSize.row; r++) {
-         resultGrid.push([]);
-         for (let c = 0; c < gridSize.column; c++) {
-            const tileResult = this.getRandomSpinTile();
-            resultGrid[r].push(tileResult);
-         }
-      }
-
+      let resultGrid = this.generateRandomResultGrid(gridSize.row, gridSize.column);
       const winningLines = this.getWinningLinesFromResultGrid(resultGrid);
 
       let totalWinningPoint = 0;
