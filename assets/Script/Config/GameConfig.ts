@@ -5,6 +5,8 @@ export const GAME_CONFIG = {
    slotGame: {
       gridRow: 3,
       gridColumn: 3,
+      gridRowCap: 5,
+      gridColumnCap: 5,
    }
 }
 
