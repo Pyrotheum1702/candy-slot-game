@@ -16,10 +16,10 @@ export default class CanvasFitAdapter extends cc.Component {
          return;
       }
 
-      let designResolution = canvas.designResolution;
-      let designAspectRatio = designResolution.width / designResolution.height;
-      let viewportSize = cc.view.getViewportRect();
-      let screenAspectRatio = viewportSize.width / viewportSize.height;
+      const designResolution = canvas.designResolution;
+      const designAspectRatio = designResolution.width / designResolution.height;
+      const viewportSize = cc.view.getCanvasSize();
+      const screenAspectRatio = viewportSize.width / viewportSize.height;
 
       switch (TARGET_LAYOUT_AXIS) {
          case FitAxis.VERTICAL: {
