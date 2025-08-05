@@ -18,6 +18,7 @@ export default class SlotGameUIController extends cc.Component {
    private _isAutoSpin = false;
    private _isBlockingAllActions = false;
    private _autoSpinRotateDummy: cc.Node = null;
+   public isOnContinuousSpinning = false;
 
    protected onLoad(): void {
       this.spinSpeedIconSpr.spriteFrame = this.spinSpeedIconSprFrames[0];
@@ -49,6 +50,7 @@ export default class SlotGameUIController extends cc.Component {
                const heat = spinBtnHoldDummy.y;
                const doesSpin = SlotGameController.ins?.spin((heat > 1));
                if (doesSpin) this.playSpinBtnPressAnim(SPIN_ANIM_SETTING_PRESET.turbo.columnDuration);
+               this.isOnContinuousSpinning = true;
             }
          }).start();
       }, this);
@@ -56,6 +58,7 @@ export default class SlotGameUIController extends cc.Component {
       const onReleaseSpinBtn = () => {
          if (this._isBlockingAllActions) return;
          spinBtnHoldDummy?.destroy();
+         this.isOnContinuousSpinning = false;
          const doesSpin = SlotGameController.ins?.spin();
          if (doesSpin) this.playSpinBtnPressAnim(Math.min(1, SPIN_ANIM_SETTING_PRESET.normal.columnDuration));
          SoundPlayer.ins.play(SOUNDS.clickSoft);
@@ -107,6 +110,7 @@ export default class SlotGameUIController extends cc.Component {
 
                   const doesSpin = SlotGameController.ins?.spin();
                   if (doesSpin) this.playSpinBtnPressAnim(SlotGameController.ins.spinAnimSetting.columnDuration);
+                  this.isOnContinuousSpinning = true;
                }
             }).start();
          }).start();
@@ -115,6 +119,7 @@ export default class SlotGameUIController extends cc.Component {
          this.autoSpinBtnIcon.angle = 0;
          spr.spriteFrame = this.autoSpinIconSprFrames[0];
          this._autoSpinRotateDummy?.destroy();
+         this.isOnContinuousSpinning = false;
 
          delete this._blockedActions[`ClickAutoSpin`];
          delete this._blockedActions[`SpinBtnEvents`];

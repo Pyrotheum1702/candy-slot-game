@@ -22,7 +22,7 @@ export const SPIN_ANIM_SETTING_PRESET = {
    turbo: new SpinAnimSetting(0, 0.25, 0),
 };
 
-export const BET_AMOUNT_PRESET = [0.1, 0.2, 0.3, 0.4, 0.5, 1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 100]
+export const BET_AMOUNT_PRESET = [0.1, 0.2, 0.3, 0.4, 0.5, 1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 100];
 
 @ccclass
 export default class SlotGameController extends cc.Component {
@@ -39,6 +39,7 @@ export default class SlotGameController extends cc.Component {
    private _defaultBetIndex = 4;
    private _waitTimeBetweenEachSpin = 0.2;
    private _isSpinBlocked = false;
+   private _shownHoldSpinTip = false;
 
    public spinAnimSetting: SpinAnimSetting = SPIN_ANIM_SETTING_PRESET.normal;
 
@@ -154,8 +155,12 @@ export default class SlotGameController extends cc.Component {
          const winAmountString = Utils.formatBalance(spinResult.totalWinningPoint, 2, 4);
          this.spinResultInfoLb.string = `Win <size=65>${winAmountString}</size>`;
          SoundPlayer.ins.play(SOUNDS.win);
+         this._shownHoldSpinTip = false;
       } else {
-         this.spinResultInfoLb.string = `Good luck!`;
+         if (this.spinResultInfoLb.string == `Good luck!` && !this._shownHoldSpinTip && !this.slotGameUICtrl.isOnContinuousSpinning) {
+            this.spinResultInfoLb.string = `Hold for quick spin!`;
+            this._shownHoldSpinTip = true;
+         } else this.spinResultInfoLb.string = `Good luck!`;
       }
 
       this.slotGridView.displayWinningLines(spinResult.winningLines);
