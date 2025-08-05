@@ -9,6 +9,7 @@ export default class SlotGameUIController extends cc.Component {
    @property(cc.Node) spinBtnNode: cc.Node = null;
    @property(cc.Node) spinBtnRefreshIcon: cc.Node = null;
    @property(cc.Node) autoSpinBtnIcon: cc.Node = null;
+   @property(cc.Label) betAmountLb: cc.Label = null;
    @property(cc.Sprite) spinSpeedIconSpr: cc.Sprite = null;
    @property([cc.SpriteFrame]) autoSpinIconSprFrames: cc.SpriteFrame[] = [];
    @property([cc.SpriteFrame]) spinSpeedIconSprFrames: cc.SpriteFrame[] = [];
@@ -20,6 +21,9 @@ export default class SlotGameUIController extends cc.Component {
 
    protected onLoad(): void {
       this.spinSpeedIconSpr.spriteFrame = this.spinSpeedIconSprFrames[0];
+
+      const betAmount = SlotGameController.ins.setDefaultBetAmount();
+      this.betAmountLb.string = Utils.formatBalance(betAmount, 2, 4);
 
       this.registerSpinBtnEvents();
    }
@@ -148,12 +152,18 @@ export default class SlotGameUIController extends cc.Component {
       if (this._isBlockingAllActions) return;
       console.log("[SlotGameUIController] onClickIncrementBet");
 
+      const betAmount = SlotGameController.ins.incrementBetAmount();
+      this.betAmountLb.string = Utils.formatBalance(betAmount, 2, 4);
+
       SoundPlayer.ins.play(SOUNDS.click);
    }
 
    public onClickDecrementBet() {
       if (this._isBlockingAllActions) return;
       console.log("[SlotGameUIController] onClickDecrementBet");
+
+      const betAmount = SlotGameController.ins.decrementBetAmount();
+      this.betAmountLb.string = Utils.formatBalance(betAmount, 2, 4);
 
       SoundPlayer.ins.play(SOUNDS.click);
    }
@@ -162,12 +172,18 @@ export default class SlotGameUIController extends cc.Component {
       if (this._isBlockingAllActions) return;
       console.log("[SlotGameUIController] onClickMinBet");
 
+      const betAmount = SlotGameController.ins.setMinBetAmount();
+      this.betAmountLb.string = Utils.formatBalance(betAmount, 2, 4);
+
       SoundPlayer.ins.play(SOUNDS.click);
    }
 
    public onClickMaxBet() {
       if (this._isBlockingAllActions) return;
       console.log("[SlotGameUIController] onClickMaxBet");
+
+      const betAmount = SlotGameController.ins.setMaxBetAmount();
+      this.betAmountLb.string = Utils.formatBalance(betAmount, 2, 4);
 
       SoundPlayer.ins.play(SOUNDS.click);
    }

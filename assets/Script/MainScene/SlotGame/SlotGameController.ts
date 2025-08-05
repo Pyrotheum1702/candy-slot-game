@@ -21,6 +21,8 @@ export const SPIN_ANIM_SETTING_PRESET = {
    turbo: new SpinAnimSetting(0, 0.25, 0),
 };
 
+export const BET_AMOUNT_PRESET = [0.1, 0.2, 0.3, 0.4, 0.5, 1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 100]
+
 @ccclass
 export default class SlotGameController extends cc.Component {
    public static ins: SlotGameController = null;
@@ -29,8 +31,12 @@ export default class SlotGameController extends cc.Component {
    @property(SlotGameUIController) slotGameUICtrl: SlotGameUIController = null;
    @property(cc.RichText) spinResultInfoLb: cc.RichText = null;
 
-   _isSpinBlocked = false;
-   _waitTimeBetweenEachSpin = 0.2;
+   private _betAmount = 0;
+   private _currentBetIndex = 0;
+   private _defaultBetIndex = 4;
+   private _waitTimeBetweenEachSpin = 0.2;
+   private _isSpinBlocked = false;
+
    public spinAnimSetting: SpinAnimSetting = SPIN_ANIM_SETTING_PRESET.normal;
 
    protected onLoad(): void {
@@ -51,7 +57,7 @@ export default class SlotGameController extends cc.Component {
       if (this._isSpinBlocked) return false;
       this._isSpinBlocked = true;
 
-      const spinResult = SpinResultGenerator.generateRandomSpinResult(100);
+      const spinResult = SpinResultGenerator.generateRandomSpinResult(this._betAmount);
       const isSpinResultValid = this.validateSpinResult(spinResult);
 
       if (isSpinResultValid) {
@@ -73,6 +79,36 @@ export default class SlotGameController extends cc.Component {
 
       this.spinAnimSetting = presets[nextIndex];
       return nextIndex;
+   }
+
+   private updateBetAmount() {
+      this._betAmount = BET_AMOUNT_PRESET[this._currentBetIndex];
+      return this._betAmount;
+   }
+
+   public setDefaultBetAmount(): number {
+      this._currentBetIndex = this._defaultBetIndex;
+      return this.updateBetAmount();
+   }
+
+   public incrementBetAmount(): number {
+      if (this._currentBetIndex < BET_AMOUNT_PRESET.length - 1) this._currentBetIndex++;
+      return this.updateBetAmount();
+   }
+
+   public decrementBetAmount(): number {
+      if (this._currentBetIndex > 0) this._currentBetIndex--;
+      return this.updateBetAmount();
+   }
+
+   public setMinBetAmount(): number {
+      this._currentBetIndex = 0;
+      return this.updateBetAmount();
+   }
+
+   public setMaxBetAmount(): number {
+      this._currentBetIndex = BET_AMOUNT_PRESET.length - 1;
+      return this.updateBetAmount();
    }
 
    private displaySpinResultInfo(spinResult: SpinResult) {
