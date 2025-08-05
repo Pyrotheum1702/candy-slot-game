@@ -2,10 +2,24 @@ import { GAME_CONFIG } from "../../Config/GameConfig";
 import SoundPlayer, { SOUNDS } from "../../Helper/Components/SoundPlayer";
 import { Utils } from "../../Helper/Utils";
 import SlotGameUIController from "./SlotGameUIController";
-import SlotGridView, { SPIN_ANIM_SETTING_PRESET, SpinAnimSetting } from "./SpinResult/SlotGridView";
+import SlotGridView from "./SpinResult/SlotGridView";
 import SpinResultGenerator, { SpinResult } from "./SpinResult/SpinResultGenerator";
 
 const { ccclass, property } = cc._decorator;
+
+export class SpinAnimSetting {
+   constructor(
+      public offsetDummyCount: number,
+      public columnDuration: number,
+      public columnTurnOffsetTime: number
+   ) { }
+}
+
+export const SPIN_ANIM_SETTING_PRESET = {
+   normal: new SpinAnimSetting(3, 0.5, 0.275),
+   fast: new SpinAnimSetting(0, 0.25, 0.15),
+   turbo: new SpinAnimSetting(0, 0.25, 0),
+};
 
 @ccclass
 export default class SlotGameController extends cc.Component {
@@ -50,6 +64,15 @@ export default class SlotGameController extends cc.Component {
          });
          return true;
       } else return false;
+   }
+
+   public switchSpinAnimSetting(): number {
+      const presets = [SPIN_ANIM_SETTING_PRESET.normal, SPIN_ANIM_SETTING_PRESET.fast, SPIN_ANIM_SETTING_PRESET.turbo];
+      const currentIndex = presets.indexOf(this.spinAnimSetting);
+      const nextIndex = (currentIndex + 1) % presets.length;
+
+      this.spinAnimSetting = presets[nextIndex];
+      return nextIndex;
    }
 
    private displaySpinResultInfo(spinResult: SpinResult) {

@@ -7,25 +7,11 @@ import SpinResultGenerator, { GridPosition, SpinResult, SpinResultColumn, SpinRe
 import { Utils } from "../../../Helper/Utils";
 import Drawer from "../../../Helper/Drawer";
 import SoundPlayer, { SOUNDS } from "../../../Helper/Components/SoundPlayer";
-import SlotGameController from "../SlotGameController";
+import SlotGameController, { SPIN_ANIM_SETTING_PRESET } from "../SlotGameController";
 
 const { ccclass, property } = cc._decorator;
 
 const GRID_CELL_PADDING = 30;
-
-export class SpinAnimSetting {
-   constructor(
-      public offsetDummyCount: number,
-      public columnDuration: number,
-      public columnTurnOffsetTime: number
-   ) { }
-}
-
-export const SPIN_ANIM_SETTING_PRESET = {
-   normal: new SpinAnimSetting(3, 0.5, 0.275),
-   fast: new SpinAnimSetting(0, 0.5, 0.15),
-   turbo: new SpinAnimSetting(0, 0.25, 0),
-};
 
 @ccclass
 export default class SlotGridView extends cc.Component {

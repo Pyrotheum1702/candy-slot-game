@@ -1,7 +1,6 @@
 import SoundPlayer, { SOUNDS } from "../../Helper/Components/SoundPlayer";
 import { Utils } from "../../Helper/Utils";
-import SlotGameController from "./SlotGameController";
-import { SPIN_ANIM_SETTING_PRESET } from "./SpinResult/SlotGridView";
+import SlotGameController, { SPIN_ANIM_SETTING_PRESET } from "./SlotGameController";
 
 const { ccclass, property } = cc._decorator;
 
@@ -10,7 +9,9 @@ export default class SlotGameUIController extends cc.Component {
    @property(cc.Node) spinBtnNode: cc.Node = null;
    @property(cc.Node) spinBtnRefreshIcon: cc.Node = null;
    @property(cc.Node) autoSpinBtnIcon: cc.Node = null;
+   @property(cc.Sprite) spinSpeedIconSpr: cc.Sprite = null;
    @property([cc.SpriteFrame]) autoSpinIconSprFrames: cc.SpriteFrame[] = [];
+   @property([cc.SpriteFrame]) spinSpeedIconSprFrames: cc.SpriteFrame[] = [];
 
    private _blockedActions = {};
    private _isAutoSpin = false;
@@ -18,6 +19,8 @@ export default class SlotGameUIController extends cc.Component {
    private _autoSpinRotateDummy: cc.Node = null;
 
    protected onLoad(): void {
+      this.spinSpeedIconSpr.spriteFrame = this.spinSpeedIconSprFrames[0];
+
       this.registerSpinBtnEvents();
    }
 
@@ -30,7 +33,6 @@ export default class SlotGameUIController extends cc.Component {
 
    private registerSpinBtnEvents() {
       let spinBtnHoldDummy: cc.Node = null;
-
 
       this.spinBtnNode.on(cc.Node.EventType.TOUCH_START, () => {
          if (this._blockedActions[`SpinBtnEvents`] == true) return;
@@ -121,6 +123,9 @@ export default class SlotGameUIController extends cc.Component {
    public onClickAdjustSpeed() {
       if (this._isBlockingAllActions) return;
       console.log("[SlotGameUIController] onClickAdjustSpeed");
+
+      const nextSettingIndex = SlotGameController.ins.switchSpinAnimSetting();
+      this.spinSpeedIconSpr.spriteFrame = this.spinSpeedIconSprFrames[nextSettingIndex];
 
       SoundPlayer.ins.play(SOUNDS.click);
    }
