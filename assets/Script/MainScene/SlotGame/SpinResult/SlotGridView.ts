@@ -7,6 +7,7 @@ import SpinResultGenerator, { GridPosition, SpinResult, SpinResultColumn, SpinRe
 import { Utils } from "../../../Helper/Utils";
 import Drawer from "../../../Helper/Drawer";
 import SoundPlayer, { SOUNDS } from "../../../Helper/Components/SoundPlayer";
+import SlotGameController from "../SlotGameController";
 
 const { ccclass, property } = cc._decorator;
 
@@ -39,7 +40,6 @@ export default class SlotGridView extends cc.Component {
    private _gridCells: Array<Array<SlotGridCell>> = [];
    private _gridItemColumns: Array<SlotGridColumn> = [];
    private _currentGridItems: Array<Array<SlotGridItem>> = [];
-   private _spinAnimSetting: SpinAnimSetting = SPIN_ANIM_SETTING_PRESET.normal;
    private _columnScrollOverflowLength: number = 55;
    private _columnScrollOverflowDuration: number = 0.2;
    private _displayingWinningLineDrawKeys: Array<string> = [];
@@ -289,9 +289,10 @@ export default class SlotGridView extends cc.Component {
          let resultTileColumns: Array<SpinResultColumn> = SpinResultUtils.getColumnsFromResultGrid(spinResult.grid);
          let columnSpinAnimPromises: Array<Promise<null>> = [];
 
-         let columnDuration = this._spinAnimSetting.columnDuration;
-         let offsetDummyCount = this._spinAnimSetting.offsetDummyCount;
-         let columnTurnOffsetTime = this._spinAnimSetting.columnTurnOffsetTime;
+         const spinAnimSetting = SlotGameController.ins.spinAnimSetting;
+         let columnDuration = spinAnimSetting.columnDuration;
+         let offsetDummyCount = spinAnimSetting.offsetDummyCount;
+         let columnTurnOffsetTime = spinAnimSetting.columnTurnOffsetTime;
 
          if (quickMode) {
             columnDuration = SPIN_ANIM_SETTING_PRESET.turbo.columnDuration;

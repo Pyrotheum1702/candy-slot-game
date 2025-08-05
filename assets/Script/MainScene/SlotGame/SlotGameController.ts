@@ -2,7 +2,7 @@ import { GAME_CONFIG } from "../../Config/GameConfig";
 import SoundPlayer, { SOUNDS } from "../../Helper/Components/SoundPlayer";
 import { Utils } from "../../Helper/Utils";
 import SlotGameUIController from "./SlotGameUIController";
-import SlotGridView from "./SpinResult/SlotGridView";
+import SlotGridView, { SPIN_ANIM_SETTING_PRESET, SpinAnimSetting } from "./SpinResult/SlotGridView";
 import SpinResultGenerator, { SpinResult } from "./SpinResult/SpinResultGenerator";
 
 const { ccclass, property } = cc._decorator;
@@ -17,6 +17,7 @@ export default class SlotGameController extends cc.Component {
 
    _isSpinBlocked = false;
    _waitTimeBetweenEachSpin = 0.2;
+   public spinAnimSetting: SpinAnimSetting = SPIN_ANIM_SETTING_PRESET.normal;
 
    protected onLoad(): void {
       SlotGameController.ins = this;
