@@ -1,7 +1,8 @@
 import { GAME_CONFIG } from "../../Config/GameConfig";
+import { Utils } from "../../Helper/Utils";
 import SlotGameUIController from "./SlotGameUIController";
 import SlotGridView from "./SpinResult/SlotGridView";
-import SpinResultGenerator from "./SpinResult/SpinResultGenerator";
+import SpinResultGenerator, { SpinResult } from "./SpinResult/SpinResultGenerator";
 
 const { ccclass, property } = cc._decorator;
 
@@ -11,9 +12,16 @@ export default class SlotGameController extends cc.Component {
 
    @property(SlotGridView) slotGridView: SlotGridView = null;
    @property(SlotGameUIController) slotGameUICtrl: SlotGameUIController = null;
+   @property(cc.RichText) spinResultInfoLb: cc.RichText = null;
+
+   _isSpinBlocked = false;
+   _waitTimeBetweenEachSpin = 0.2;
 
    protected onLoad(): void {
       SlotGameController.ins = this;
+
+      this.spinResultInfoLb.string = ``;
+
       this.slotGridView.buildCellGrid(GAME_CONFIG.slotGame.gridRow, GAME_CONFIG.slotGame.gridColumn);
 
       const initGrid = SpinResultGenerator.generateRandomResultGrid(
@@ -23,17 +31,37 @@ export default class SlotGameController extends cc.Component {
       this.slotGridView.displayGrid(initGrid);
    }
 
-   public async spin() {
-      const spinResult = SpinResultGenerator.generateRandomSpinResult(10);
+   public spin(quickMode = false) {
+      if (this._isSpinBlocked) return false;
+      this._isSpinBlocked = true;
+
+      const spinResult = SpinResultGenerator.generateRandomSpinResult(100);
       const isSpinResultValid = this.validateSpinResult(spinResult);
 
       if (isSpinResultValid) {
-         this.slotGridView.playSpinAnimation(spinResult);
-         this.slotGridView.displayGrid(spinResult.grid);
-      }
+         this.slotGridView.playSpinAnim(spinResult, quickMode).then(() => {
+            this.displaySpinResultInfo(spinResult);
+
+            this.scheduleOnce(() => {
+               this._isSpinBlocked = false;
+            }, this._waitTimeBetweenEachSpin);
+         });
+         return true;
+      } else return false;
    }
 
-   private validateSpinResult(spinResult) {
+   private displaySpinResultInfo(spinResult: SpinResult) {
+      if (spinResult.totalWinningPoint > 0) {
+         const winAmountString = Utils.formatBalance(spinResult.totalWinningPoint, 2, 4);
+         this.spinResultInfoLb.string = `Win <size=65>${winAmountString}</size>`;
+      } else {
+         this.spinResultInfoLb.string = `Good luck!`;
+      }
+
+      this.slotGridView.displayWinningLines(spinResult.winningLines);
+   }
+
+   private validateSpinResult(spinResult: SpinResult) {
       if (spinResult?.grid == null) return false;
 
       const expectedRow = GAME_CONFIG.slotGame.gridRow;

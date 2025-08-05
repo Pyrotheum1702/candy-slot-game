@@ -1,7 +1,31 @@
 import { COUNT_WINNING_LINES, GAME_CONFIG, POSSIBLE_SPIN_RESULT_TILES } from "../../../Config/GameConfig";
 
+export class SpinResult {
+   constructor(
+      public grid: Array<Array<SpinResultTile>>,
+      public winningLines: Array<Array<GridPosition>>,
+      public totalWinningPoint: number,
+   ) { }
+}
+
+export type GridPosition = { r: number; c: number };
+
+export class SpinResultTile {
+   constructor(
+      public tileID: string,
+      public sprFrameIndex: number,
+      public pointMultiply: number,
+      public spawnChance: number
+   ) { }
+}
+
+export class SpinResultColumn {
+   public tiles: SpinResultTile[] = [];
+   constructor(initialTiles: SpinResultTile[] = []) { this.tiles = initialTiles; }
+}
+
 export default class SpinResultGenerator {
-   private static getRandomSpinTile() {
+   public static generateRandomSpinResultTile() {
       const totalWeight = POSSIBLE_SPIN_RESULT_TILES.reduce((sum, tile) => sum + tile.spawnChance, 0);
       const rand = Math.random() * totalWeight;
 
@@ -14,7 +38,7 @@ export default class SpinResultGenerator {
       return POSSIBLE_SPIN_RESULT_TILES[POSSIBLE_SPIN_RESULT_TILES.length - 1];
    }
 
-   private static getWinningLinesFromResultGrid(resultGrid: Array<Array<any>>) {
+   private static getWinningLinesFromResultGrid(resultGrid: Array<Array<SpinResultTile>>): Array<Array<GridPosition>> {
       const winningLines = [];
 
       for (const line of COUNT_WINNING_LINES) {
@@ -27,13 +51,13 @@ export default class SpinResultGenerator {
       return winningLines;
    }
 
-   public static generateRandomResultGrid(row, column): Array<Array<any>> {
-      let resultGrid = [];
+   public static generateRandomResultGrid(row, column): Array<Array<SpinResultTile>> {
+      let resultGrid: Array<Array<SpinResultTile>> = [];
 
       for (let r = 0; r < row; r++) {
          resultGrid.push([]);
          for (let c = 0; c < column; c++) {
-            const tileResult = this.getRandomSpinTile();
+            const tileResult = this.generateRandomSpinResultTile();
             resultGrid[r].push(tileResult);
          }
       }
@@ -41,7 +65,7 @@ export default class SpinResultGenerator {
       return resultGrid;
    }
 
-   public static generateRandomSpinResult(betAmount: number = 0) {
+   public static generateRandomSpinResult(betAmount: number = 0): SpinResult {
       if (betAmount < 0) {
          throw new Error(`[SpinResultGenerator:generateRandomSpinResult] Unexpected behavior: betAmount is a negative number`);
       }
@@ -61,14 +85,6 @@ export default class SpinResultGenerator {
          totalWinningPoint += tile.pointMultiply * betAmount;
       }
 
-      return {
-         row: gridSize.row,
-         column: gridSize.column,
-         grid: resultGrid,
-         winningLines,
-         totalWinningPoint,
-      }
+      return new SpinResult(resultGrid, winningLines, totalWinningPoint);
    }
 }
-
-
