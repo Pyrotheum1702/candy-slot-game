@@ -1,6 +1,7 @@
 import { GAME_CONFIG } from "../../Config/GameConfig";
 import SoundPlayer, { SOUNDS } from "../../Helper/Components/SoundPlayer";
 import { Utils } from "../../Helper/Utils";
+import Player from "../../Player/Player";
 import SlotGameUIController from "./SlotGameUIController";
 import SlotGridView from "./SpinResult/SlotGridView";
 import SpinResultGenerator, { SpinResult } from "./SpinResult/SpinResultGenerator";
@@ -29,6 +30,8 @@ export default class SlotGameController extends cc.Component {
 
    @property(SlotGridView) slotGridView: SlotGridView = null;
    @property(SlotGameUIController) slotGameUICtrl: SlotGameUIController = null;
+   @property(cc.Label) playerNameLb: cc.Label = null;
+   @property(cc.Label) playerBalanceLb: cc.Label = null;
    @property(cc.RichText) spinResultInfoLb: cc.RichText = null;
 
    private _betAmount = 0;
@@ -45,6 +48,7 @@ export default class SlotGameController extends cc.Component {
       this.spinResultInfoLb.string = ``;
 
       this.slotGridView.buildCellGrid(GAME_CONFIG.slotGame.gridRow, GAME_CONFIG.slotGame.gridColumn);
+      this.updatePlayerInfo();
 
       const initGrid = SpinResultGenerator.generateRandomResultGrid(
          GAME_CONFIG.slotGame.gridRow,
@@ -53,37 +57,23 @@ export default class SlotGameController extends cc.Component {
       this.slotGridView.displayGrid(initGrid);
    }
 
-   public spin(quickMode = false) {
+   public spin(isQuickMode = false) {
       if (this._isSpinBlocked) return false;
       this._isSpinBlocked = true;
 
-      const spinResult = SpinResultGenerator.generateRandomSpinResult(this._betAmount);
+      const isSpinAffordable = this.checkSpinAffordable();
+      if (!isSpinAffordable) return false;
+
+      const betAmount = this._betAmount;
+      const balanceUpdateAmount = -betAmount;
+      const spinResult = SpinResultGenerator.generateRandomSpinResult(betAmount);
       const isSpinResultValid = this.validateSpinResult(spinResult);
 
       if (isSpinResultValid) {
-         this.slotGridView.playSpinAnim(spinResult, quickMode).then(() => {
-            this.displaySpinResultInfo(spinResult);
-
-            this.scheduleOnce(() => {
-               this._isSpinBlocked = false;
-            }, this._waitTimeBetweenEachSpin);
-         });
+         this.updatePlayerBalance(balanceUpdateAmount);
+         this.processSpinResult(spinResult, isQuickMode);
          return true;
       } else return false;
-   }
-
-   public switchSpinAnimSetting(): number {
-      const presets = [SPIN_ANIM_SETTING_PRESET.normal, SPIN_ANIM_SETTING_PRESET.fast, SPIN_ANIM_SETTING_PRESET.turbo];
-      const currentIndex = presets.indexOf(this.spinAnimSetting);
-      const nextIndex = (currentIndex + 1) % presets.length;
-
-      this.spinAnimSetting = presets[nextIndex];
-      return nextIndex;
-   }
-
-   private updateBetAmount() {
-      this._betAmount = BET_AMOUNT_PRESET[this._currentBetIndex];
-      return this._betAmount;
    }
 
    public setDefaultBetAmount(): number {
@@ -109,6 +99,54 @@ export default class SlotGameController extends cc.Component {
    public setMaxBetAmount(): number {
       this._currentBetIndex = BET_AMOUNT_PRESET.length - 1;
       return this.updateBetAmount();
+   }
+
+   public switchSpinAnimSetting(): number {
+      const presets = [SPIN_ANIM_SETTING_PRESET.normal, SPIN_ANIM_SETTING_PRESET.fast, SPIN_ANIM_SETTING_PRESET.turbo];
+      const currentIndex = presets.indexOf(this.spinAnimSetting);
+      const nextIndex = (currentIndex + 1) % presets.length;
+
+      this.spinAnimSetting = presets[nextIndex];
+      return nextIndex;
+   }
+
+   private processSpinResult(spinResult: SpinResult, isQuickMode) {
+      const winAmount = spinResult.totalWinningPoint;
+
+      this.slotGridView.playSpinAnim(spinResult, isQuickMode).then(() => {
+         if (winAmount > 0) {
+            const balanceUpdateAmount = winAmount;
+            this.updatePlayerBalance(balanceUpdateAmount);
+         }
+
+         this.displaySpinResultInfo(spinResult);
+
+         this.scheduleOnce(() => {
+            this._isSpinBlocked = false;
+         }, this._waitTimeBetweenEachSpin);
+      });
+   }
+
+   private updateBetAmount() {
+      this._betAmount = BET_AMOUNT_PRESET[this._currentBetIndex];
+      return this._betAmount;
+   }
+
+   private checkSpinAffordable() {
+      const balance = Player.getBalance();
+      return (balance - this._betAmount > 0);
+   }
+
+   private updatePlayerInfo() {
+      this.playerNameLb.string = Player.getName();
+      this.playerBalanceLb.string = Utils.formatBalance(Player.getBalance(), 2, 2) + ` TKN`;
+   }
+
+   private updatePlayerBalance(updateAmount: number) {
+      let balance = Player.getBalance();
+      balance = Math.max(0, balance + updateAmount);
+      Player.setBalance(balance);
+      this.updatePlayerInfo();
    }
 
    private displaySpinResultInfo(spinResult: SpinResult) {
