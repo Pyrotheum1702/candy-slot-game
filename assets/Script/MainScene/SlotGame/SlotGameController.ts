@@ -1,4 +1,5 @@
 import { GAME_CONFIG } from "../../Config/GameConfig";
+import SoundPlayer, { SOUNDS } from "../../Helper/Components/SoundPlayer";
 import { Utils } from "../../Helper/Utils";
 import SlotGameUIController from "./SlotGameUIController";
 import SlotGridView from "./SpinResult/SlotGridView";
@@ -54,6 +55,7 @@ export default class SlotGameController extends cc.Component {
       if (spinResult.totalWinningPoint > 0) {
          const winAmountString = Utils.formatBalance(spinResult.totalWinningPoint, 2, 4);
          this.spinResultInfoLb.string = `Win <size=65>${winAmountString}</size>`;
+         SoundPlayer.ins.play(SOUNDS.win);
       } else {
          this.spinResultInfoLb.string = `Good luck!`;
       }

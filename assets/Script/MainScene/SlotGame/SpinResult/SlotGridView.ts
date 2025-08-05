@@ -6,6 +6,7 @@ import SpinResultUtils from "./SpinResultUtils";
 import SpinResultGenerator, { GridPosition, SpinResult, SpinResultColumn, SpinResultTile } from "./SpinResultGenerator";
 import { Utils } from "../../../Helper/Utils";
 import Drawer from "../../../Helper/Drawer";
+import SoundPlayer, { SOUNDS } from "../../../Helper/Components/SoundPlayer";
 
 const { ccclass, property } = cc._decorator;
 
@@ -20,7 +21,7 @@ export class SpinAnimSetting {
 }
 
 export const SPIN_ANIM_SETTING_PRESET = {
-   normal: new SpinAnimSetting(3, 0.5, 0.35),
+   normal: new SpinAnimSetting(3, 0.5, 0.275),
    fast: new SpinAnimSetting(0, 0.5, 0.15),
    turbo: new SpinAnimSetting(0, 0.25, 0),
 };
@@ -247,8 +248,9 @@ export default class SlotGridView extends cc.Component {
 
          let lastY = scroller.y;
          const tween = cc.tween(scroller)
-            .delay(delay)
-            .to(duration + this._columnScrollOverflowDuration / 2,
+            .delay(delay).call(() => {
+               SoundPlayer.ins.play(SOUNDS.woosh);
+            }).to(duration + this._columnScrollOverflowDuration / 2,
                { y: scrollLength + this._columnScrollOverflowLength }, {
                'easing': 'linear',
                onUpdate: () => {
@@ -259,6 +261,8 @@ export default class SlotGridView extends cc.Component {
                      if (cc.isValid(item?.node)) item.node.y -= dif;
                   }
                }
+            }).call(() => {
+               SoundPlayer.ins.play(SOUNDS.dropHit);
             }).to(this._columnScrollOverflowDuration / 2,
                { y: scrollLength }, {
                'easing': 'linear',
@@ -279,6 +283,7 @@ export default class SlotGridView extends cc.Component {
 
    public async playSpinAnim(spinResult: SpinResult, quickMode = false): Promise<null> {
       if (CC_DEV) console.log(`[SlotGridView:playSpinAnim]`, spinResult);
+
 
       return new Promise(resolve => {
          let resultTileColumns: Array<SpinResultColumn> = SpinResultUtils.getColumnsFromResultGrid(spinResult.grid);
@@ -308,7 +313,9 @@ export default class SlotGridView extends cc.Component {
             columnSpinAnimPromises.push(promise);
          }
 
-         Promise.all(columnSpinAnimPromises).then(() => { resolve(null); });
+         Promise.all(columnSpinAnimPromises).then(() => {
+            resolve(null);
+         });
       });
    }
 }

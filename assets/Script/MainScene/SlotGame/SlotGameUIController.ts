@@ -1,3 +1,4 @@
+import SoundPlayer, { SOUNDS } from "../../Helper/Components/SoundPlayer";
 import { Utils } from "../../Helper/Utils";
 import SlotGameController from "./SlotGameController";
 import { SPIN_ANIM_SETTING_PRESET } from "./SpinResult/SlotGridView";
@@ -43,6 +44,7 @@ export default class SlotGameUIController extends cc.Component {
          spinBtnHoldDummy?.destroy();
          const doesSpin = SlotGameController.ins?.spin();
          if (doesSpin) playSpinBtnPressAnim(Math.min(1, SPIN_ANIM_SETTING_PRESET.normal.columnDuration));
+         SoundPlayer.ins.play(SOUNDS.clickSoft);
       }
 
       this.spinBtnNode.on(cc.Node.EventType.TOUCH_END, () => {
@@ -56,45 +58,63 @@ export default class SlotGameUIController extends cc.Component {
    public onClickHistory() {
       if (this.isBlockingAllActions) return;
       console.log("[SlotGameUIController] onClickHistory");
+
+      SoundPlayer.ins.play(SOUNDS.click);
    }
 
    public onClickAutoSpin() {
       if (this.isBlockingAllActions) return;
       console.log("[SlotGameUIController] onClickAutoSpin");
+
+      SoundPlayer.ins.play(SOUNDS.click);
    }
 
    public onClickAdjustSpeed() {
       if (this.isBlockingAllActions) return;
       console.log("[SlotGameUIController] onClickAdjustSpeed");
+
+      SoundPlayer.ins.play(SOUNDS.click);
    }
 
    public onClickChangeLineCount() {
       if (this.isBlockingAllActions) return;
       console.log("[SlotGameUIController] onClickChangeLineCount");
+
+      SoundPlayer.ins.play(SOUNDS.click);
    }
 
    public onClickBuyBonus() {
       if (this.isBlockingAllActions) return;
       console.log("[SlotGameUIController] onClickBuyBonus");
+
+      SoundPlayer.ins.play(SOUNDS.click);
    }
 
    public onClickIncrementBet() {
       if (this.isBlockingAllActions) return;
       console.log("[SlotGameUIController] onClickIncrementBet");
+
+      SoundPlayer.ins.play(SOUNDS.click);
    }
 
    public onClickDecrementBet() {
       if (this.isBlockingAllActions) return;
       console.log("[SlotGameUIController] onClickDecrementBet");
+
+      SoundPlayer.ins.play(SOUNDS.click);
    }
 
    public onClickMinBet() {
       if (this.isBlockingAllActions) return;
       console.log("[SlotGameUIController] onClickMinBet");
+
+      SoundPlayer.ins.play(SOUNDS.click);
    }
 
    public onClickMaxBet() {
       if (this.isBlockingAllActions) return;
       console.log("[SlotGameUIController] onClickMaxBet");
+
+      SoundPlayer.ins.play(SOUNDS.click);
    }
 }
