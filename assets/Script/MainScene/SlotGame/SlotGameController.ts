@@ -1,4 +1,4 @@
-import { GAME_CONFIG, SPIN_ANIM_SETTING_PRESET, SpinAnimSetting } from "../../Config/GameConfig";
+import { BET_AMOUNT_PRESET, GAME_CONFIG, SPIN_ANIM_SETTING_PRESET, SpinAnimSetting } from "../../Config/GameConfig";
 import SoundPlayer, { SOUNDS } from "../../Helper/Components/SoundPlayer";
 import LocalStorage from "../../Helper/LocalStorage";
 import { Utils } from "../../Helper/Utils";
@@ -9,8 +9,6 @@ import SlotGridView from "./SpinResult/SlotGridView";
 import SpinResultGenerator, { SpinResult } from "./SpinResult/SpinResultGenerator";
 
 const { ccclass, property } = cc._decorator;
-
-export const BET_AMOUNT_PRESET = [0.1, 0.2, 0.3, 0.4, 0.5, 1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 100];
 
 enum SpinBlockReason {
    spinProcess = `spinProcess`,

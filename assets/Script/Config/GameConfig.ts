@@ -50,4 +50,6 @@ export const SPIN_ANIM_SETTING_PRESET = {
    turbo: new SpinAnimSetting(0, 0.25, 0),
 };
 
+export const BET_AMOUNT_PRESET = [0.1, 0.2, 0.3, 0.4, 0.5, 1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 100];
+
 // author: `Pyro`
