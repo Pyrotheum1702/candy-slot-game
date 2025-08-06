@@ -1,6 +1,7 @@
 import { GAME_CONFIG } from "../../Config/GameConfig";
 import SoundPlayer, { SOUNDS } from "../../Helper/Components/SoundPlayer";
 import { Utils } from "../../Helper/Utils";
+import { callNotificationDialog } from "../../Notification/NotificationDialog";
 import Player from "../../Player/Player";
 import SlotGameUIController from "./SlotGameUIController";
 import SlotGridView from "./SpinResult/SlotGridView";
@@ -24,6 +25,12 @@ export const SPIN_ANIM_SETTING_PRESET = {
 
 export const BET_AMOUNT_PRESET = [0.1, 0.2, 0.3, 0.4, 0.5, 1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 100];
 
+enum SpinBlockReason {
+   spinProcess = `spinProcess`,
+   freeSpinNotify = `freeSpinNotify`,
+   freeSpinLootNotify = `freeSpinLootNotify`,
+}
+
 @ccclass
 export default class SlotGameController extends cc.Component {
    public static ins: SlotGameController = null;
@@ -31,16 +38,22 @@ export default class SlotGameController extends cc.Component {
    @property(SlotGridView) slotGridView: SlotGridView = null;
    @property(SlotGameUIController) slotGameUICtrl: SlotGameUIController = null;
    @property(cc.Label) playerNameLb: cc.Label = null;
+   @property(cc.Label) freeSpinCountLb: cc.Label = null;
    @property(cc.Label) playerBalanceLb: cc.Label = null;
    @property(cc.RichText) spinResultInfoLb: cc.RichText = null;
 
    private _betAmount = 0;
    private _freeSpinLeft = 0;
+   private _payoutMultiplier = 1;
    private _currentBetIndex = 0;
    private _defaultBetIndex = 4;
    private _waitTimeBetweenEachSpin = 0.2;
-   private _isSpinBlocked = false;
    private _shownHoldSpinTip = false;
+   private _spinBlockers: Object = {};
+   private _freeSpinTurnData = {
+      freeSpinStreak: 0,
+      winAmount: 0,
+   };
 
    public spinAnimSetting: SpinAnimSetting = SPIN_ANIM_SETTING_PRESET.normal;
 
@@ -60,24 +73,81 @@ export default class SlotGameController extends cc.Component {
    }
 
    public spin(isQuickMode = false) {
-      if (this._isSpinBlocked) return false;
-      this._isSpinBlocked = true;
+      if (this.isSpinBlocked()) return false;
+      this.blockSpin(SpinBlockReason.spinProcess);
 
       const isSpinAffordable = this.checkSpinAffordable();
       if (!isSpinAffordable) return false;
 
+      let winMultiplier = 1;
+
+      if (this._freeSpinLeft > 0) {
+         winMultiplier = GAME_CONFIG.freeSpinWinMultiplier;
+      }
+
       const betAmount = this._betAmount;
       const balanceUpdateAmount = -betAmount;
-      const spinResult = SpinResultGenerator.generateRandomSpinResult(betAmount);
+      const spinResult = SpinResultGenerator.generateRandomSpinResult(betAmount, winMultiplier);
       const isSpinResultValid = this.validateSpinResult(spinResult);
 
       if (CC_DEV) console.log(`[SlotGameController:spin]`, { spinResult });
 
       if (isSpinResultValid) {
-         this.updatePlayerBalance(balanceUpdateAmount);
-         this.processSpinResult(spinResult, isQuickMode);
+         let onProcessSpinResultComplete = null;
+         const freeSpinLeft = this._freeSpinLeft;
+
+         if (freeSpinLeft <= 0) {
+            this.updatePlayerBalance(balanceUpdateAmount);
+         } else {
+            this._freeSpinTurnData.winAmount += spinResult.totalWinAmount;
+            this._freeSpinTurnData.freeSpinStreak++;
+
+            this._freeSpinLeft--;
+            console.log(`_freeSpinLeft`, this._freeSpinLeft);
+
+            if (this._freeSpinLeft == 0) {
+               onProcessSpinResultComplete = () => {
+                  this.blockSpin(SpinBlockReason.freeSpinLootNotify);
+
+                  const freeSpinTurnWinAmount = Utils.formatBalance(this._freeSpinTurnData.winAmount, 2, 4);
+
+                  let dialogMessage = `From ${this._freeSpinTurnData.freeSpinStreak} Free Spins\nYou won ${freeSpinTurnWinAmount}!`;
+                  if (this._freeSpinTurnData.winAmount <= 0) {
+                     dialogMessage = `From ${this._freeSpinTurnData.freeSpinStreak} Free Spins\nYou didn't win anything\nGood luck next time!`;
+                  }
+
+                  callNotificationDialog(
+                     dialogMessage, 5)
+                     .onDismiss = () => {
+                        this.unblockSpin(SpinBlockReason.freeSpinLootNotify);
+                     }
+
+                  this._freeSpinTurnData.winAmount = 0;
+                  this._freeSpinTurnData.freeSpinStreak = 0;
+               }
+            } else {
+               this.spinResultInfoLb.string = `You have ${this._freeSpinLeft} Free Spins left!`;
+            }
+         }
+
+         this.processSpinResult(spinResult, isQuickMode).then(() => {
+            onProcessSpinResultComplete?.();
+
+            this.scheduleOnce(() => {
+               this.unblockSpin(SpinBlockReason.spinProcess);
+            }, this._waitTimeBetweenEachSpin);
+
+            if (freeSpinLeft - 1 == 0) {
+               this.scheduleOnce(() => { this.slotGridView.clearDisplayingWinningLines(); }, 0.25);
+            }
+
+            if (CC_DEV) console.log(`[SlotGameController:spin:processSpinResult] complete`);
+         });
          return true;
-      } else return false;
+      } else {
+         if (CC_DEV) console.error(`[SlotGameController:spin] Unexpected: isSpinResultValid == false`);
+         return false;
+      }
    }
 
    public setDefaultBetAmount(): number {
@@ -114,21 +184,43 @@ export default class SlotGameController extends cc.Component {
       return nextIndex;
    }
 
-   private processSpinResult(spinResult: SpinResult, isQuickMode) {
-      const winAmount = spinResult.totalWinningPoint;
+   private unblockSpin(reason: SpinBlockReason) {
+      if (CC_DEV) console.log(`[unBlockSpin] reason: ${reason}`);
+      delete this._spinBlockers[reason];
+   }
 
-      this.slotGridView.playSpinAnim(spinResult, isQuickMode).then(() => {
-         if (winAmount > 0) {
-            const balanceUpdateAmount = winAmount;
-            this.updatePlayerBalance(balanceUpdateAmount);
+   private blockSpin(reason: SpinBlockReason) {
+      if (CC_DEV) console.log(`[blockSpin] reason: ${reason}`);
+      this._spinBlockers[reason] = true;
+   }
+
+   private isSpinBlocked(): boolean {
+      // if (CC_DEV) console.log(`[isSpinBlocked] reason:`, this._spinBlockers);
+      return !(Object.keys(this._spinBlockers).length === 0);
+   }
+
+   private async processSpinResult(spinResult: SpinResult, isQuickMode): Promise<null> {
+      return new Promise(resolve => {
+         const winAmount = spinResult.totalWinAmount;
+         const freeSpinAmount = spinResult.freeSpin;
+
+         if (freeSpinAmount > 0) {
+            this._freeSpinLeft += freeSpinAmount;
+            this.blockSpin(SpinBlockReason.freeSpinNotify);
          }
 
-         this.displaySpinResultInfo(spinResult);
+         this.slotGridView.playSpinAnim(spinResult, isQuickMode).then(() => {
+            if (winAmount > 0) {
+               const balanceUpdateAmount = winAmount;
+               this.updatePlayerBalance(balanceUpdateAmount);
+            }
 
-         this.scheduleOnce(() => {
-            this._isSpinBlocked = false;
-         }, this._waitTimeBetweenEachSpin);
-      });
+            this.displaySpinResultInfo(spinResult).then(() => {
+               resolve(null);
+               if (CC_DEV) console.log(`[SlotGameController:displaySpinResultInfo] complete`);
+            });
+         });
+      })
    }
 
    private updateBetAmount() {
@@ -153,25 +245,38 @@ export default class SlotGameController extends cc.Component {
       this.updatePlayerInfo();
    }
 
-   private displaySpinResultInfo(spinResult: SpinResult) {
-      if (spinResult.totalWinningPoint > 0) {
-         const winAmountString = Utils.formatBalance(spinResult.totalWinningPoint, 2, 4);
-         this.spinResultInfoLb.string = `Win <size=65>${winAmountString}</size> - x${spinResult.payoutRate}`;
+   private displaySpinResultInfo(spinResult: SpinResult): Promise<null> {
+      return new Promise(resolve => {
+         if (spinResult.totalWinAmount > 0) {
+            const winAmountString = Utils.formatBalance(spinResult.totalWinAmount, 2, 4);
+            this.spinResultInfoLb.string = `Win <size=65>${winAmountString}</size> - x${spinResult.payoutRate}`;
 
-         if (spinResult.freeSpin > 0) {
-            this.spinResultInfoLb.string = `Win <size=65>${spinResult.freeSpin}</size> Free Spin!`;
+            SoundPlayer.ins.play(SOUNDS.win);
+            this._shownHoldSpinTip = false;
+
+            if (spinResult.freeSpin > 0) {
+               this.spinResultInfoLb.string = `Win <size=65>${winAmountString}</size> and <size=65>${spinResult.freeSpin}</size> Free Spins!`;
+
+               let dialog = callNotificationDialog(
+                  `You won ${spinResult.freeSpin} Free Spins\nwith x${GAME_CONFIG.freeSpinWinMultiplier} Multiplier!`, 3);
+
+               dialog.onDismiss = () => {
+                  this.unblockSpin(SpinBlockReason.freeSpinNotify);
+                  resolve(null);
+               }
+
+               this.scheduleOnce(() => { this.slotGridView.clearDisplayingWinningLines(); }, 0.25);
+            } else resolve(null);
+         } else {
+            if (this.spinResultInfoLb.string == `Good luck!` && !this._shownHoldSpinTip && !this.slotGameUICtrl.isOnContinuousSpinning) {
+               this.spinResultInfoLb.string = `Hold for quick spin!`;
+               this._shownHoldSpinTip = true;
+            } else this.spinResultInfoLb.string = `Good luck!`;
+            resolve(null);
          }
 
-         SoundPlayer.ins.play(SOUNDS.win);
-         this._shownHoldSpinTip = false;
-      } else {
-         if (this.spinResultInfoLb.string == `Good luck!` && !this._shownHoldSpinTip && !this.slotGameUICtrl.isOnContinuousSpinning) {
-            this.spinResultInfoLb.string = `Hold for quick spin!`;
-            this._shownHoldSpinTip = true;
-         } else this.spinResultInfoLb.string = `Good luck!`;
-      }
-
-      this.slotGridView.displayWinningLines(spinResult.winningLines);
+         this.slotGridView.displayWinningLines(spinResult.winningLines);
+      })
    }
 
    private validateSpinResult(spinResult: SpinResult) {

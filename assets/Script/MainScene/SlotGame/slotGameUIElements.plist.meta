@@ -211,8 +211,8 @@
       "rawHeight": 665,
       "borderTop": 170,
       "borderBottom": 170,
-      "borderLeft": 0,
-      "borderRight": 0,
+      "borderLeft": 170,
+      "borderRight": 170,
       "spriteType": "normal",
       "subMetas": {}
     },

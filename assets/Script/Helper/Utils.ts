@@ -30,4 +30,22 @@ export class Utils {
    public static getWorldPos(node: cc.Node): cc.Vec2 {
       return node.convertToWorldSpaceAR(cc.Vec2.ZERO_R)
    }
+
+   public static fadeInNode(node: cc.Node, duration: number = 0.25, callBack = null, up = true) {
+      node.active = true
+      node.opacity = 0
+      let blockInput = new cc.Node()
+      blockInput.setContentSize(10000, 10000)
+      blockInput.addComponent(cc.BlockInputEvents)
+      blockInput.parent = node
+      blockInput.setSiblingIndex(cc.macro.MAX_ZINDEX)
+
+      cc.tween(node).to(duration, { opacity: 255 }, { easing: 'sineOut' }).call(() => { if (callBack) callBack(); blockInput.destroy() }).start()
+   }
+
+   public static fadeOutNode(node: cc.Node, duration: number = 0.25, callBack = null, destroyOnCollapsed = false) {
+      if (!node) return
+      let target = node
+      cc.tween(target).to(duration, { opacity: 0 }, { easing: 'sineIn' }).call(() => { if (callBack) callBack() }).call(() => { node.active = false; }).call(() => { if (destroyOnCollapsed) target.destroy() }).start()
+   }
 }

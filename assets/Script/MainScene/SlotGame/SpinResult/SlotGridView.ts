@@ -179,7 +179,7 @@ export default class SlotGridView extends cc.Component {
       this._gridItemColumns = [];
    }
 
-   private clearDisplayingWinningLines() {
+   public clearDisplayingWinningLines() {
       if (!this._displayingWinningLineDrawKeys.length) return;
 
       for (const key of this._displayingWinningLineDrawKeys) {

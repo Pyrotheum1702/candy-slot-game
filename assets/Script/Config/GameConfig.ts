@@ -5,26 +5,27 @@ export const GAME_CONFIG = {
    gameName: `SlotCandy`,
    newPlayerInitBalance: 1_000_000,
    playerBalanceCap: 1_000_000_000,
+   freeSpinWinMultiplier: 3,
    slotGame: {
       gridRow: 3,
       gridColumn: 3,
-      gridRowCap: 5,
-      gridColumnCap: 5,
+      gridRowCap: 3,
+      gridColumnCap: 3,
    }
 }
 
 export const POSSIBLE_SPIN_RESULT_TILES = [
-   new SpinResultTile(Utils.getRandomId(16), 0, 1.5, 22),
-   new SpinResultTile(Utils.getRandomId(16), 1, 3, 20),
-   new SpinResultTile(Utils.getRandomId(16), 2, 5, 15),
-   new SpinResultTile(Utils.getRandomId(16), 3, 10, 10),
-   new SpinResultTile(Utils.getRandomId(16), 4, 20, 8),
-   new SpinResultTile(Utils.getRandomId(16), 5, 50, 6),
+   // new SpinResultTile(Utils.getRandomId(16), 0, 1.5, 22),
+   new SpinResultTile(Utils.getRandomId(16), 1, 0.5, 20),
+   new SpinResultTile(Utils.getRandomId(16), 2, 1.5, 15),
+   new SpinResultTile(Utils.getRandomId(16), 3, 3, 10),
+   new SpinResultTile(Utils.getRandomId(16), 4, 10, 8),
+   new SpinResultTile(Utils.getRandomId(16), 5, 50, 3),
    // new SpinResultTile(Utils.getRandomId(16), 6, 75, 5),
    // new SpinResultTile(Utils.getRandomId(16), 7, 100, 3),
    // new SpinResultTile(Utils.getRandomId(16), 8, 250, 2),
-   new SpinResultTile(Utils.getRandomId(16), 9, 500, 1, TileAttribute.WILD),
-   new SpinResultTile(Utils.getRandomId(16), 10, 1, 10, TileAttribute.FREE_SPIN),
+   // new SpinResultTile(Utils.getRandomId(16), 9, 500, 1, TileAttribute.WILD),
+   new SpinResultTile(Utils.getRandomId(16), 10, 1, 13, TileAttribute.FREE_SPIN),
 ];
 
 export const COUNT_WINNING_LINES = [

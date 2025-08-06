@@ -4,7 +4,7 @@ export class SpinResult {
    constructor(
       public grid: Array<Array<SpinResultTile>>,
       public winningLines: Array<Array<GridPosition>>,
-      public totalWinningPoint: number,
+      public totalWinAmount: number,
       public payoutRate: number,
       public freeSpin: number,
    ) { }
@@ -75,7 +75,7 @@ export default class SpinResultGenerator {
       return resultGrid;
    }
 
-   public static generateRandomSpinResult(betAmount: number = 0): SpinResult {
+   public static generateRandomSpinResult(betAmount: number = 0, payoutMultiplier = 1): SpinResult {
       if (betAmount < 0) {
          throw new Error(`[SpinResultGenerator:generateRandomSpinResult] Unexpected behavior: betAmount is a negative number`);
       }
@@ -88,17 +88,19 @@ export default class SpinResultGenerator {
       let resultGrid = this.generateRandomResultGrid(gridSize.row, gridSize.column);
       const winningLines = this.getWinningLinesFromResultGrid(resultGrid);
 
-      let totalWinningPoint = 0;
+      let totalWinAmount = 0;
       let payoutRate = 0;
       let freeSpin = 0;
 
       for (const line of winningLines) {
          const tile = resultGrid[line[0].r][line[0].c];
-         totalWinningPoint += tile.pointMultiply * betAmount;
+         totalWinAmount += tile.pointMultiply * betAmount * payoutMultiplier;
          payoutRate += tile.pointMultiply;
          if (tile.attribute == TileAttribute.FREE_SPIN) freeSpin += line.length;
       }
 
-      return new SpinResult(resultGrid, winningLines, totalWinningPoint, payoutRate, freeSpin);
+      payoutRate *= payoutMultiplier;
+
+      return new SpinResult(resultGrid, winningLines, totalWinAmount, payoutRate, freeSpin);
    }
 }
