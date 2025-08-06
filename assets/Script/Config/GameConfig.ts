@@ -1,5 +1,5 @@
 import { Utils } from "../Helper/Utils";
-import { SpinResultTile } from "../MainScene/SlotGame/SpinResult/SpinResultGenerator";
+import { SpinResultTile, TileAttribute } from "../MainScene/SlotGame/SpinResult/SpinResultGenerator";
 
 export const GAME_CONFIG = {
    gameName: `SlotCandy`,
@@ -23,7 +23,8 @@ export const POSSIBLE_SPIN_RESULT_TILES = [
    // new SpinResultTile(Utils.getRandomId(16), 6, 75, 5),
    // new SpinResultTile(Utils.getRandomId(16), 7, 100, 3),
    // new SpinResultTile(Utils.getRandomId(16), 8, 250, 2),
-   new SpinResultTile(Utils.getRandomId(16), 9, 500, 1),
+   new SpinResultTile(Utils.getRandomId(16), 9, 500, 1, TileAttribute.WILD),
+   new SpinResultTile(Utils.getRandomId(16), 10, 1, 10, TileAttribute.FREE_SPIN),
 ];
 
 export const COUNT_WINNING_LINES = [

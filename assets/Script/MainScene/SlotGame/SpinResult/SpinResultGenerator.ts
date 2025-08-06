@@ -5,17 +5,27 @@ export class SpinResult {
       public grid: Array<Array<SpinResultTile>>,
       public winningLines: Array<Array<GridPosition>>,
       public totalWinningPoint: number,
+      public payoutRate: number,
+      public freeSpin: number,
    ) { }
 }
 
 export type GridPosition = { r: number; c: number };
+
+export enum TileAttribute {
+   NONE = "None",
+   FREE_SPIN = "FreeSpin",
+   WILD = "Wild",
+   SCATTER = "Scatter"
+}
 
 export class SpinResultTile {
    constructor(
       public tileID: string,
       public sprFrameIndex: number,
       public pointMultiply: number,
-      public spawnChance: number
+      public spawnChance: number,
+      public attribute: TileAttribute = TileAttribute.NONE,
    ) { }
 }
 
@@ -79,12 +89,16 @@ export default class SpinResultGenerator {
       const winningLines = this.getWinningLinesFromResultGrid(resultGrid);
 
       let totalWinningPoint = 0;
+      let payoutRate = 0;
+      let freeSpin = 0;
 
       for (const line of winningLines) {
          const tile = resultGrid[line[0].r][line[0].c];
          totalWinningPoint += tile.pointMultiply * betAmount;
+         payoutRate += tile.pointMultiply;
+         if (tile.attribute == TileAttribute.FREE_SPIN) freeSpin += line.length;
       }
 
-      return new SpinResult(resultGrid, winningLines, totalWinningPoint);
+      return new SpinResult(resultGrid, winningLines, totalWinningPoint, payoutRate, freeSpin);
    }
 }

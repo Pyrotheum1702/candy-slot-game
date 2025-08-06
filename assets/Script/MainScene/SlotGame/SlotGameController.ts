@@ -70,6 +70,8 @@ export default class SlotGameController extends cc.Component {
       const spinResult = SpinResultGenerator.generateRandomSpinResult(betAmount);
       const isSpinResultValid = this.validateSpinResult(spinResult);
 
+      if (CC_DEV) console.log(`[SlotGameController:spin]`, { spinResult });
+
       if (isSpinResultValid) {
          this.updatePlayerBalance(balanceUpdateAmount);
          this.processSpinResult(spinResult, isQuickMode);
@@ -153,7 +155,7 @@ export default class SlotGameController extends cc.Component {
    private displaySpinResultInfo(spinResult: SpinResult) {
       if (spinResult.totalWinningPoint > 0) {
          const winAmountString = Utils.formatBalance(spinResult.totalWinningPoint, 2, 4);
-         this.spinResultInfoLb.string = `Win <size=65>${winAmountString}</size>`;
+         this.spinResultInfoLb.string = `Win <size=65>${winAmountString}</size> - x${spinResult.payoutRate}`;
          SoundPlayer.ins.play(SOUNDS.win);
          this._shownHoldSpinTip = false;
       } else {
