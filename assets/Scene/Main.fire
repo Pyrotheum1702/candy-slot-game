@@ -384,10 +384,15 @@
     "slotGameUICtrl": {
       "__id__": 55
     },
+    "spinBtnIcon": {
+      "__id__": 58
+    },
     "playerNameLb": {
       "__id__": 39
     },
-    "freeSpinCountLb": null,
+    "freeSpinCountLb": {
+      "__id__": 61
+    },
     "playerBalanceLb": {
       "__id__": 41
     },

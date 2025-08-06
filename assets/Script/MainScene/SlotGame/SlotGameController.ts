@@ -22,6 +22,7 @@ export default class SlotGameController extends cc.Component {
 
    @property(SlotGridView) slotGridView: SlotGridView = null;
    @property(SlotGameUIController) slotGameUICtrl: SlotGameUIController = null;
+   @property(cc.Node) spinBtnIcon: cc.Node = null;
    @property(cc.Label) playerNameLb: cc.Label = null;
    @property(cc.Label) freeSpinCountLb: cc.Label = null;
    @property(cc.Label) playerBalanceLb: cc.Label = null;
@@ -71,66 +72,70 @@ export default class SlotGameController extends cc.Component {
       const balanceUpdateAmount = -betAmount;
       const spinResult = SpinResultGenerator.generateRandomSpinResult(betAmount, winMultiplier);
       const isSpinResultValid = this.validateSpinResult(spinResult);
-
       if (CC_DEV) console.log(`[SlotGameController:spin]`, { spinResult });
 
-      if (isSpinResultValid) {
-         let onProcessSpinResultComplete = null;
-         const freeSpinLeft = this._freeSpinLeft;
-
-         if (freeSpinLeft <= 0) {
-            this.updatePlayerBalance(balanceUpdateAmount);
-         } else {
-            this._freeSpinTurnData.winAmount += spinResult.totalWinAmount;
-            this._freeSpinTurnData.freeSpinStreak++;
-
-            this._freeSpinLeft--;
-            console.log(`_freeSpinLeft`, this._freeSpinLeft);
-
-            if (this._freeSpinLeft == 0) {
-               onProcessSpinResultComplete = () => {
-                  this.blockSpin(SpinBlockReason.freeSpinLootNotify);
-
-                  const freeSpinTurnWinAmount = Utils.formatBalance(this._freeSpinTurnData.winAmount, 2, 4);
-
-                  let dialogMessage = `From ${this._freeSpinTurnData.freeSpinStreak} Free Spins\nYou won ${freeSpinTurnWinAmount}!`;
-                  if (this._freeSpinTurnData.winAmount <= 0) {
-                     dialogMessage = `From ${this._freeSpinTurnData.freeSpinStreak} Free Spins\nYou didn't win anything\nGood luck next time!`;
-                  }
-
-                  callNotificationDialog(
-                     dialogMessage, 5)
-                     .onDismiss = () => {
-                        this.unblockSpin(SpinBlockReason.freeSpinLootNotify);
-                     }
-                  SoundPlayer.ins.play(`win`);
-
-                  this._freeSpinTurnData.winAmount = 0;
-                  this._freeSpinTurnData.freeSpinStreak = 0;
-               }
-            } else {
-               this.spinResultInfoLb.string = `You have ${this._freeSpinLeft} Free Spins left!`;
-            }
-         }
-
-         this.processSpinResult(spinResult, isQuickMode).then(() => {
-            onProcessSpinResultComplete?.();
-
-            this.scheduleOnce(() => {
-               this.unblockSpin(SpinBlockReason.spinProcess);
-            }, this._waitTimeBetweenEachSpin);
-
-            if (freeSpinLeft - 1 == 0) {
-               this.scheduleOnce(() => { this.slotGridView.clearDisplayingWinningLines(); }, 0.25);
-            }
-
-            if (CC_DEV) console.log(`[SlotGameController:spin:processSpinResult] complete`);
-         });
-         return true;
-      } else {
+      if (!isSpinResultValid) {
          if (CC_DEV) console.error(`[SlotGameController:spin] Unexpected: isSpinResultValid == false`);
          return false;
       }
+
+      let onProcessSpinResultComplete = null;
+      const freeSpinLeft = this._freeSpinLeft;
+
+      if (freeSpinLeft <= 0) {
+         this.updatePlayerBalance(balanceUpdateAmount);
+      } else {
+         this._freeSpinTurnData.winAmount += spinResult.totalWinAmount;
+         this._freeSpinTurnData.freeSpinStreak++;
+
+         this._freeSpinLeft--;
+         console.log(`_freeSpinLeft`, this._freeSpinLeft);
+
+         if (this._freeSpinLeft == 0) {
+            onProcessSpinResultComplete = () => {
+               this.blockSpin(SpinBlockReason.freeSpinLootNotify);
+
+               const freeSpinTurnWinAmount = Utils.formatBalance(this._freeSpinTurnData.winAmount, 2, 4);
+
+               let dialogMessage = `From ${this._freeSpinTurnData.freeSpinStreak} Free Spins\nYou won ${freeSpinTurnWinAmount}!`;
+               if (this._freeSpinTurnData.winAmount <= 0) {
+                  dialogMessage = `From ${this._freeSpinTurnData.freeSpinStreak} Free Spins\nYou didn't win anything\nGood luck next time!`;
+               }
+
+               callNotificationDialog(
+                  dialogMessage, 5)
+                  .onDismiss = () => {
+                     this.unblockSpin(SpinBlockReason.freeSpinLootNotify);
+                  }
+               SoundPlayer.ins.play(`win`);
+
+               this._freeSpinTurnData.winAmount = 0;
+               this._freeSpinTurnData.freeSpinStreak = 0;
+            }
+
+            this.spinBtnIcon.active = true;
+            this.freeSpinCountLb.node.active = false;
+         } else {
+            this.spinResultInfoLb.string = `You have ${this._freeSpinLeft} Free Spins left!`;
+         }
+      }
+
+      this.freeSpinCountLb.string = '' + this._freeSpinLeft;
+
+      this.processSpinResult(spinResult, isQuickMode).then(() => {
+         onProcessSpinResultComplete?.();
+
+         this.scheduleOnce(() => {
+            this.unblockSpin(SpinBlockReason.spinProcess);
+         }, this._waitTimeBetweenEachSpin);
+
+         if (freeSpinLeft - 1 == 0) {
+            this.scheduleOnce(() => { this.slotGridView.clearDisplayingWinningLines(); }, 0.25);
+         }
+
+         if (CC_DEV) console.log(`[SlotGameController:spin:processSpinResult] complete`);
+      });
+      return true;
    }
 
    private loadLocalSavedSettings() {
@@ -206,6 +211,7 @@ export default class SlotGameController extends cc.Component {
 
          if (freeSpinAmount > 0) {
             this._freeSpinLeft += freeSpinAmount;
+            this.freeSpinCountLb.string = '' + this._freeSpinLeft;
             this.blockSpin(SpinBlockReason.freeSpinNotify);
          }
 
@@ -267,6 +273,8 @@ export default class SlotGameController extends cc.Component {
                   resolve(null);
                }
 
+               this.spinBtnIcon.active = false;
+               this.freeSpinCountLb.node.active = true;
                SoundPlayer.ins.play(`hitResult_SFX`);
                this.scheduleOnce(() => { this.slotGridView.clearDisplayingWinningLines(); }, 0.25);
             } else resolve(null);
