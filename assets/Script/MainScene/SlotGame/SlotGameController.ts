@@ -1,5 +1,6 @@
 import { GAME_CONFIG, SPIN_ANIM_SETTING_PRESET, SpinAnimSetting } from "../../Config/GameConfig";
 import SoundPlayer, { SOUNDS } from "../../Helper/Components/SoundPlayer";
+import LocalStorage from "../../Helper/LocalStorage";
 import { Utils } from "../../Helper/Utils";
 import { callNotificationDialog } from "../../Notification/NotificationDialog";
 import Player from "../../Player/Player";
@@ -44,6 +45,8 @@ export default class SlotGameController extends cc.Component {
 
    protected onLoad(): void {
       SlotGameController.ins = this;
+
+      this.loadLocalSavedSettings();
 
       this.spinResultInfoLb.string = ``;
 
@@ -102,6 +105,7 @@ export default class SlotGameController extends cc.Component {
                      .onDismiss = () => {
                         this.unblockSpin(SpinBlockReason.freeSpinLootNotify);
                      }
+                  SoundPlayer.ins.play(`win`);
 
                   this._freeSpinTurnData.winAmount = 0;
                   this._freeSpinTurnData.freeSpinStreak = 0;
@@ -131,7 +135,18 @@ export default class SlotGameController extends cc.Component {
       }
    }
 
-   public setDefaultBetAmount(): number {
+   private loadLocalSavedSettings() {
+      const localBetAmountIndex = LocalStorage.getItem(`BetAmountIndex`);
+      if (localBetAmountIndex != null) this.setBetAmountIndex(localBetAmountIndex);
+      else this.setDefaultBetAmount();
+   }
+
+   private setBetAmountIndex(betIndex): number {
+      this._currentBetIndex = Math.max(0, Math.min(betIndex, BET_AMOUNT_PRESET.length - 1));
+      return this.updateBetAmount();
+   }
+
+   private setDefaultBetAmount(): number {
       this._currentBetIndex = this._defaultBetIndex;
       return this.updateBetAmount();
    }
@@ -156,12 +171,18 @@ export default class SlotGameController extends cc.Component {
       return this.updateBetAmount();
    }
 
+   public setSpinAnimSetting(index) {
+      const presets = [SPIN_ANIM_SETTING_PRESET.normal, SPIN_ANIM_SETTING_PRESET.fast, SPIN_ANIM_SETTING_PRESET.turbo];
+      this.spinAnimSetting = presets[index];
+   }
+
    public switchSpinAnimSetting(): number {
       const presets = [SPIN_ANIM_SETTING_PRESET.normal, SPIN_ANIM_SETTING_PRESET.fast, SPIN_ANIM_SETTING_PRESET.turbo];
       const currentIndex = presets.indexOf(this.spinAnimSetting);
       const nextIndex = (currentIndex + 1) % presets.length;
 
       this.spinAnimSetting = presets[nextIndex];
+      LocalStorage.setItem(`SpinSpeed`, nextIndex);
       return nextIndex;
    }
 
@@ -206,6 +227,8 @@ export default class SlotGameController extends cc.Component {
 
    private updateBetAmount() {
       this._betAmount = BET_AMOUNT_PRESET[this._currentBetIndex];
+      LocalStorage.setItem(`BetAmountIndex`, this._currentBetIndex);
+      this.slotGameUICtrl.betAmountLb.string = Utils.formatBalance(this._betAmount, 2, 4);
       return this._betAmount;
    }
 
@@ -246,6 +269,7 @@ export default class SlotGameController extends cc.Component {
                   resolve(null);
                }
 
+               SoundPlayer.ins.play(`hitResult_SFX`);
                this.scheduleOnce(() => { this.slotGridView.clearDisplayingWinningLines(); }, 0.25);
             } else resolve(null);
          } else {

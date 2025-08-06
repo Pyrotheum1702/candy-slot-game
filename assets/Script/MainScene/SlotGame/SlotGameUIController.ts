@@ -1,5 +1,6 @@
 import { SPIN_ANIM_SETTING_PRESET } from "../../Config/GameConfig";
 import SoundPlayer, { SOUNDS } from "../../Helper/Components/SoundPlayer";
+import LocalStorage from "../../Helper/LocalStorage";
 import { Utils } from "../../Helper/Utils";
 import SlotGameController from "./SlotGameController";
 
@@ -24,9 +25,7 @@ export default class SlotGameUIController extends cc.Component {
    protected onLoad(): void {
       this.spinSpeedIconSpr.spriteFrame = this.spinSpeedIconSprFrames[0];
 
-      const betAmount = SlotGameController.ins.setDefaultBetAmount();
-      this.betAmountLb.string = Utils.formatBalance(betAmount, 2, 4);
-
+      this.loadLocalSavedSettings();
       this.registerSpinBtnEvents();
    }
 
@@ -158,9 +157,7 @@ export default class SlotGameUIController extends cc.Component {
       if (this._isBlockingAllActions) return;
       console.log("[SlotGameUIController] onClickIncrementBet");
 
-      const betAmount = SlotGameController.ins.incrementBetAmount();
-      this.betAmountLb.string = Utils.formatBalance(betAmount, 2, 4);
-
+      SlotGameController.ins.incrementBetAmount();
       SoundPlayer.ins.play(SOUNDS.click);
    }
 
@@ -168,9 +165,7 @@ export default class SlotGameUIController extends cc.Component {
       if (this._isBlockingAllActions) return;
       console.log("[SlotGameUIController] onClickDecrementBet");
 
-      const betAmount = SlotGameController.ins.decrementBetAmount();
-      this.betAmountLb.string = Utils.formatBalance(betAmount, 2, 4);
-
+      SlotGameController.ins.decrementBetAmount();
       SoundPlayer.ins.play(SOUNDS.click);
    }
 
@@ -178,9 +173,7 @@ export default class SlotGameUIController extends cc.Component {
       if (this._isBlockingAllActions) return;
       console.log("[SlotGameUIController] onClickMinBet");
 
-      const betAmount = SlotGameController.ins.setMinBetAmount();
-      this.betAmountLb.string = Utils.formatBalance(betAmount, 2, 4);
-
+      SlotGameController.ins.setMinBetAmount();
       SoundPlayer.ins.play(SOUNDS.click);
    }
 
@@ -188,9 +181,15 @@ export default class SlotGameUIController extends cc.Component {
       if (this._isBlockingAllActions) return;
       console.log("[SlotGameUIController] onClickMaxBet");
 
-      const betAmount = SlotGameController.ins.setMaxBetAmount();
-      this.betAmountLb.string = Utils.formatBalance(betAmount, 2, 4);
-
+      SlotGameController.ins.setMaxBetAmount();
       SoundPlayer.ins.play(SOUNDS.click);
+   }
+
+   private loadLocalSavedSettings() {
+      const spinSpeedIndex = LocalStorage.getItem(`SpinSpeed`);
+      if (spinSpeedIndex != null) {
+         SlotGameController.ins.setSpinAnimSetting(spinSpeedIndex);
+         this.spinSpeedIconSpr.spriteFrame = this.spinSpeedIconSprFrames[spinSpeedIndex];
+      }
    }
 }

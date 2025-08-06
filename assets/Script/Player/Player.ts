@@ -5,8 +5,8 @@ const { ccclass, property } = cc._decorator;
 
 @ccclass
 export default class Player {
-   private static _lsBalanceKey = `${GAME_CONFIG.gameName}-Balance`;
-   private static _lsNameKey = `${GAME_CONFIG.gameName}-Username`;
+   private static _lsBalanceKey = `Balance`;
+   private static _lsNameKey = `Username`;
 
    public static setBalance(value: number) {
       if (isNaN(value)) {
