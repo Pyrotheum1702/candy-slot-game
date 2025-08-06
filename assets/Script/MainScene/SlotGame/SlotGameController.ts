@@ -35,6 +35,7 @@ export default class SlotGameController extends cc.Component {
    @property(cc.RichText) spinResultInfoLb: cc.RichText = null;
 
    private _betAmount = 0;
+   private _freeSpinLeft = 0;
    private _currentBetIndex = 0;
    private _defaultBetIndex = 4;
    private _waitTimeBetweenEachSpin = 0.2;
@@ -156,6 +157,11 @@ export default class SlotGameController extends cc.Component {
       if (spinResult.totalWinningPoint > 0) {
          const winAmountString = Utils.formatBalance(spinResult.totalWinningPoint, 2, 4);
          this.spinResultInfoLb.string = `Win <size=65>${winAmountString}</size> - x${spinResult.payoutRate}`;
+
+         if (spinResult.freeSpin > 0) {
+            this.spinResultInfoLb.string = `Win <size=65>${spinResult.freeSpin}</size> Free Spin!`;
+         }
+
          SoundPlayer.ins.play(SOUNDS.win);
          this._shownHoldSpinTip = false;
       } else {

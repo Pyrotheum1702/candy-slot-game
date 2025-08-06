@@ -4,7 +4,10 @@ const { ccclass, property } = cc._decorator;
 export default class SlotGridItem extends cc.Component {
    @property(cc.Sprite) spr: cc.Sprite = null;
 
-   public removeIfOutOfBounds() {
-      
+   public isOutOfBounds() {
+      let outOfBounds = false;
+      if (this.node.y < -(this.node.parent.height / 2 + this.node.height / 2 + 100))
+         outOfBounds = true;
+      return outOfBounds;
    }
 }
