@@ -1,4 +1,4 @@
-import { GAME_CONFIG } from "../../../Config/GameConfig";
+import { GAME_CONFIG, SPIN_ANIM_SETTING_PRESET } from "../../../Config/GameConfig";
 import SlotGridCell from "./SlotGridCell";
 import SlotGridColumn from "./SlotGridColumn";
 import SlotGridItem from "./SlotGridItem";
@@ -7,7 +7,7 @@ import SpinResultGenerator, { GridPosition, SpinResult, SpinResultColumn, SpinRe
 import { Utils } from "../../../Helper/Utils";
 import Drawer from "../../../Helper/Drawer";
 import SoundPlayer, { SOUNDS } from "../../../Helper/Components/SoundPlayer";
-import SlotGameController, { SPIN_ANIM_SETTING_PRESET } from "../SlotGameController";
+import SlotGameController from "../SlotGameController";
 
 const { ccclass, property } = cc._decorator;
 

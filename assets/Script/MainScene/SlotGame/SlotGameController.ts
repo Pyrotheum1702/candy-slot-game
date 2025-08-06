@@ -1,4 +1,4 @@
-import { GAME_CONFIG } from "../../Config/GameConfig";
+import { GAME_CONFIG, SPIN_ANIM_SETTING_PRESET, SpinAnimSetting } from "../../Config/GameConfig";
 import SoundPlayer, { SOUNDS } from "../../Helper/Components/SoundPlayer";
 import { Utils } from "../../Helper/Utils";
 import { callNotificationDialog } from "../../Notification/NotificationDialog";
@@ -8,20 +8,6 @@ import SlotGridView from "./SpinResult/SlotGridView";
 import SpinResultGenerator, { SpinResult } from "./SpinResult/SpinResultGenerator";
 
 const { ccclass, property } = cc._decorator;
-
-export class SpinAnimSetting {
-   constructor(
-      public offsetDummyCount: number,
-      public columnDuration: number,
-      public columnTurnOffsetTime: number
-   ) { }
-}
-
-export const SPIN_ANIM_SETTING_PRESET = {
-   normal: new SpinAnimSetting(3, 0.5, 0.275),
-   fast: new SpinAnimSetting(0, 0.25, 0.15),
-   turbo: new SpinAnimSetting(0, 0.25, 0),
-};
 
 export const BET_AMOUNT_PRESET = [0.1, 0.2, 0.3, 0.4, 0.5, 1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 100];
 
@@ -44,7 +30,6 @@ export default class SlotGameController extends cc.Component {
 
    private _betAmount = 0;
    private _freeSpinLeft = 0;
-   private _payoutMultiplier = 1;
    private _currentBetIndex = 0;
    private _defaultBetIndex = 4;
    private _waitTimeBetweenEachSpin = 0.2;
@@ -74,17 +59,13 @@ export default class SlotGameController extends cc.Component {
 
    public spin(isQuickMode = false) {
       if (this.isSpinBlocked()) return false;
-      this.blockSpin(SpinBlockReason.spinProcess);
 
       const isSpinAffordable = this.checkSpinAffordable();
       if (!isSpinAffordable) return false;
 
-      let winMultiplier = 1;
+      this.blockSpin(SpinBlockReason.spinProcess);
 
-      if (this._freeSpinLeft > 0) {
-         winMultiplier = GAME_CONFIG.freeSpinWinMultiplier;
-      }
-
+      const winMultiplier = (this._freeSpinLeft > 0) ? GAME_CONFIG.freeSpinWinMultiplier : 1;
       const betAmount = this._betAmount;
       const balanceUpdateAmount = -betAmount;
       const spinResult = SpinResultGenerator.generateRandomSpinResult(betAmount, winMultiplier);

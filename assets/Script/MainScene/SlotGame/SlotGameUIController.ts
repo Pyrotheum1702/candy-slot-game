@@ -1,6 +1,7 @@
+import { SPIN_ANIM_SETTING_PRESET } from "../../Config/GameConfig";
 import SoundPlayer, { SOUNDS } from "../../Helper/Components/SoundPlayer";
 import { Utils } from "../../Helper/Utils";
-import SlotGameController, { SPIN_ANIM_SETTING_PRESET } from "./SlotGameController";
+import SlotGameController from "./SlotGameController";
 
 const { ccclass, property } = cc._decorator;
 

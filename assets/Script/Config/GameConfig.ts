@@ -1,6 +1,14 @@
 import { Utils } from "../Helper/Utils";
 import { SpinResultTile, TileAttribute } from "../MainScene/SlotGame/SpinResult/SpinResultGenerator";
 
+export class SpinAnimSetting {
+   constructor(
+      public offsetDummyCount: number,
+      public columnDuration: number,
+      public columnTurnOffsetTime: number
+   ) { }
+}
+
 export const GAME_CONFIG = {
    gameName: `SlotCandy`,
    newPlayerInitBalance: 1_000_000,
@@ -35,5 +43,11 @@ export const COUNT_WINNING_LINES = [
    [{ r: 0, c: 0 }, { r: 1, c: 1 }, { r: 2, c: 2 }],
    [{ r: 0, c: 2 }, { r: 1, c: 1 }, { r: 2, c: 0 }],
 ];
+
+export const SPIN_ANIM_SETTING_PRESET = {
+   normal: new SpinAnimSetting(3, 0.5, 0.275),
+   fast: new SpinAnimSetting(0, 0.25, 0.15),
+   turbo: new SpinAnimSetting(0, 0.25, 0),
+};
 
 // author: `Pyro`
